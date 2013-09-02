@@ -4,42 +4,6 @@ $(document).ready( function() {
 if(window.location.hash){  // Fragment exists
 	var hash = window.location.hash.substring(1);//Puts hash in variable, and removes the # character
 	var tours = JSON.parse($("#tour_data").html());
-/*
-	var tours = {
-
-		'tour-title' : { //#hashtag
-			'steps' : [
-				{
-					'id' : 'menu-settings', //parent ID to reference
-					//'class' : 'menu-media',
-					'text' : 'Next', //button text
-					'content' : 'To edit the website title you can navigate to Settings -> General',
-					'title' : 'General Settings',
-					'options' : 'tipLocation:top;tipAnimation:pop',
-				},
-				{
-					'id' : 'blogname', //parent ID to reference
-					//'class' : 'custom',
-					'text' : 'Next', //button text
-					'content' : 'Add your own descriptive site title, keep it short.',
-					'title' : 'Add a Title',
-					'options' : 'tipLocation:right;tipAnimation:pop',
-				},
-				{
-					'id' : 'submit', //parent ID to reference
-					//'class' : 'custom',
-					'text' : 'Done', //button text
-					'content' : 'When you are finished don\'t forget to click "Submit" to save your changes.',
-					'title' : 'Save Changes',
-					'options' : 'tipLocation:top;tipAnimation:pop',
-				},							
-
-			]//end 'steps'
-		} //end tour-video		
-
-	};//end tours
-*/
-
 	if(hash!=''){
 		
 		//set the container for the tip(s)
