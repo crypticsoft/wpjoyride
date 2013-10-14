@@ -10,24 +10,45 @@ License: GPLv2 only
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
+require( 'lib/settings_page.php');
+//require( 'lib/process_post_data.php');
+
+// Include the Class File
+include 'joyride/src/WpTour.php';
+
 function joyride_admin_init(){
 
 		$plugin_uri = plugin_dir_url( __FILE__ );
-
 	/* load css */
-		wp_enqueue_style( 'joyride-css', $plugin_uri . 'joyride/joyride-2.1.css' );
+		wp_enqueue_style( 'joyride', $plugin_uri . 'joyride/joyride-2.1.css' );
+		wp_enqueue_style('jquery-ui',
+                'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css',
+                false,
+                '1.10.3',
+                false);
+		wp_enqueue_style( 'wptuts-theme-settings', $plugin_uri . 'lib/settings/css/wptuts_theme_settings.css' );
 
 	/* load js */
 		wp_enqueue_script( 'jquery-cookie', $plugin_uri . 'joyride/jquery.cookie.js', array('jquery') );
 		wp_enqueue_script( 'jquery-modernizr', $plugin_uri . 'joyride/modernizr.mq.js', array('jquery') );
 		wp_enqueue_script( 'jquery-joyride', $plugin_uri . 'joyride/jquery.joyride-2.1.js', array('jquery') );
-		wp_enqueue_script( 'jquery-joyride-init', $plugin_uri . 'joyride/plugin.js', array('jquery', 'jquery-joyride') );
-		require( $plugin_url . 'lib/metabox_tips.php');
+		wp_enqueue_script( 'jquery-joyride-init', $plugin_uri . 'joyride/plugin.js', array('jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-accordion','jquery-ui-draggable','jquery-ui-droppable','jquery-joyride') );
+
+		//wp_enqueue_script( 'joyride_main_js', $plugin_uri . 'joyride/js/main.js' , array('backbone'), null, true);
+		//wp_enqueue_script('joyride_main_js');
+  
+		/*wp_localize_script( 'jquery-joyride-init', 'ajax_object',
+            array( 'ajax_url' => admin_url( 'admin-ajax.php' ) )
+        );*/
+
+		require( 'lib/metabox_tips.php');
 }
 
 	function get_tours(){
 		$args = array(
 			'post_type' => 'joyride_tour',
+			'order' => 'ASC',
+			'orderby' => 'date'
 		);
 		// The Query
 		$the_query = new WP_Query( $args );
@@ -36,10 +57,15 @@ function joyride_admin_init(){
 		while ( $the_query->have_posts() ) {
 			$the_query->the_post();
 			$post = get_post(get_the_ID());
+			$meta_url = get_post_meta( $post->ID, 'tour_url', true );
+			$meta_hashtag = get_post_meta( $post->ID, 'tour_hashtag', true );
+
 			$tours[] = array(
 				'title' => get_the_title(),
 				'slug' => $post->post_name,
-				'id' => get_the_ID()
+				'id' => $post->ID,
+				'url' => $meta_url,
+				'hashtag' => $meta_hashtag,
 			);
 		}
 		return $tours;
@@ -66,6 +92,7 @@ function joyride_admin_init(){
 			$the_query->the_post();
 			$post_id = get_the_ID();
 			$data[] = array(
+				'id' => $post_id,
 				'title' => get_the_title(),
 				'parent_id' => get_post_meta( $post_id, 'wpjoyride_parent_id', true),
 				'tip_text' => get_post_meta( $post_id, 'wpjoyride_tip_text', true),
@@ -78,36 +105,68 @@ function joyride_admin_init(){
 		}
 		return $data;
 	}
-	function build_tour_json() {
-		//build up json object with tour + tips
-		$str = "<script id=\"tour_data\" type=\"application/json\">\n";
-		$data = array();		
+
+	function get_tours_tips() {
 		foreach(get_tours() as $tour){
 			// get tips related to this tour
-			$tips = get_tips( $tour['id'] );
+			//$tips = get_tips( $tour['id'] );
+			$tips = tip_meta( $tour['id'], 'get' );
+			$hashtag = get_post_meta( $tour['id'], 'tour_hashtag', true );
+			$url = get_post_meta( $tour['id'], 'tour_url', true );
+			$data = array(
+				'title' => $tour['title'],
+				'hashtag' => $hashtag,
+				'url'	=> $url,
+				'id' => $tour['id'],
+				'steps' => array()
+			);
+
 			foreach($tips as $tip){
-				$data[ $tour['slug'] ]['steps'][] = array(
-					'id' => ( substr($tip['parent_id'], 0, 1) == '#' ? str_replace('#','',$tip['parent_id']) : NULL ),
-					'class' => ( substr($tip['parent_id'], 0, 1) == '.' ? str_replace('.','',$tip['parent_id']) : NULL ),
-					'text' => $tip['button_text'],
-					'content' => htmlentities( $tip['tip_text'] ),
-					'title' => $tip['title'],
-					'options' => 'tipLocation:' . $tip['tip_location'] . ';tipAnimation:' . $tip['tip_animation']
-				);
+				$tip = unserialize( $tip );
+				if( $tip['parent_id'] && $tip['tip_title' ]) {
+					$data['steps'][] = array(
+						'id' => ( substr($tip['parent_id'], 0, 1) == '#' ? str_replace('#','',$tip['parent_id']) : NULL ),
+						'class' => ( substr($tip['parent_id'], 0, 1) == '.' ? str_replace('.','',$tip['parent_id']) : NULL ),
+						'text' => $tip['button_text'],
+						'content' => htmlentities( stripslashes( $tip['tip_text'] ) ),
+						'title' => $tip['tip_title'],
+						'options' => 'tipLocation:' . $tip['tip_location'] . ';tipAnimation:' . $tip['tip_animation']
+					);
+				}
 			}
-		}		
+			$tours[] = $data;
+		}
+		return $tours;
+	}
+	function build_tour_json() {
+		$data = array();		
+		$tours = array();
+		$tours_groups = array();
+		$terms = get_terms('tour_groups');
+		foreach($terms as $term){
+			$tours_groups[] = array(
+				'id' => $term->term_id,
+				'title' => $term->name
+			);
+		}
+		$tours = get_tours_tips();
+
+		//build up json object with tour + tips
+/*		
+		$str = "<script id=\"tour_data\" type=\"application/json\">\n";
 		$str .= json_encode($data);
+		$str .= "</script>";
+*/
+		$str .= "<script id=\"tours_all\" type=\"application/json\">\n";
+		$str .= json_encode($tours);
+		$str .= "</script><script id=\"tours_groups\" type=\"application/json\">\n";
+		$str .= json_encode($tours_groups);
 		$str .= "</script>";
 		print $str;
 
 		// embedded styles
-		print '<style type="text/css">';
-		print 'div.input-wrap { padding: 0px 0 10px; border-bottom: 1px solid #e8e8e8; }';
-		print 'div.input-wrap input[type=text] { width: 100%; padding: 5px; }';
-		print 'div.input-wrap label { font-weight: bold; }';
-		print 'div.input-wrap ul.checkbox-list li { display: inline-block; padding-right: 10px; }';
-		print 'div.input-wrap ul.checkbox-list li label {  font-weight: normal !important; }';
-		print '</style>';
+//		print '<style type="text/css">';
+//		print '</style>';
 	}
 
 
@@ -119,6 +178,150 @@ function joyride_init(){
 add_action( 'admin_init', 'joyride_admin_init' );
 add_action( 'init', 'joyride_init');
 add_action( 'admin_footer', 'build_tour_json');
+
+/* wpTour */
+function call_wp_tour()
+{
+  return new WpTour('admin');
+}
+
+// init when Admin panel is being displayed
+if (is_admin) add_action('init', 'call_wp_tour');
+
+// Helper function to allow use of relative paths
+if (!function_exists('pp')){
+  function pp()
+  {
+    return plugin_dir_url(__FILE__);
+  }
+}
+
+
+
+
+if ( is_admin() )
+{
+	add_action('wp_ajax_create_tour', 'create_tour_callback');
+	add_action('wp_ajax_save_tip', 'save_tip_callback');
+	add_action('wp_ajax_delete_tip', 'delete_tip_callback');
+	add_action('wp_ajax_delete_tour', 'delete_tour_callback');
+}
+
+
+function create_tour_callback() {
+		global $wpdb; // this is how you get access to the database
+	//if( array_key_exists( 'tour_title', $_POST ) ) {
+		$tour = array(
+			'title' => $_POST['tour_title'],
+			'hashtag' => $_POST['tour_hashtag'],
+			'url' => $_POST['tour_url'],
+			'group_id' => array_key_exists('tour_group', $_POST) ? $_POST['tour_group'] : null,
+		);
+		//return json_encode($tour);
+		$args = array(
+			'post_title' => $tour['title'],
+			'post_type' => 'joyride_tour',
+		//	'tax_input' => [ array( 'taxonomy_id' => array( $tour['group_id'] ) ) ],
+		//	'post_name' => $tour['hashtag'],
+			'post_status' => 'publish',
+			'post_content' => 'tour description can go here or nothing at all'
+		);
+		//print_r($args);die();
+		$tour_id = wp_insert_post( $args, true );
+
+		//print_r($args);
+		//if ( $wp_error ) return $wp_error;
+		if ( $tour_id ) {
+			add_post_meta( $tour_id, 'tour_hashtag', $tour['hashtag'], true);
+			add_post_meta( $tour_id, 'tour_url', $tour['url'], true);
+			echo $tour_id;
+		}
+		die();
+	//}
+
+}
+
+function save_tip_callback() {
+		global $wpdb; // this is how you get access to the database
+	//if( array_key_exists( 'tour_title', $_POST ) ) {
+		$tip = array(
+			'parent_id' => $_POST['parent_id'],
+			'tip_title' => $_POST['tip_title'],
+			'tip_text' => addslashes( $_POST['tip_text'] ),
+			'tip_location' => $_POST['tip_location'],
+			'tip_animation' => $_POST['tip_animation'],
+			'button_text' => $_POST['button_text'],
+		);
+		$tour_id = $_POST['tour_id'];		
+
+		//if( add_post_meta( $tour_id, 'tour_tip', serialize($tip), false) ) {
+		if( tip_meta( $tour_id, 'update', serialize($tip) ) ) {
+			echo json_encode($tip);
+		}
+		die();
+	//}
+
+}
+
+function delete_tip_callback() {
+	$post_id = $_POST['post_id'];
+	$title = $_POST['tip_title'];
+
+	$tips = tip_meta( $post_id, 'get' );
+	foreach( $tips as $tip ){
+		$utip = unserialize($tip);
+		if( $title == $utip['tip_title'] ) {
+			$del = tip_meta( $post_id, 'delete', $tip );
+			if( $del ) return;
+		}
+	}
+}
+
+function delete_tour_callback() {
+	$post_id = $_POST['post_id'];
+	if ( wp_delete_post( $post_id ) ) {
+		echo json_encode( get_tours_tips() );
+		die();
+	}
+}
+
+/* tip meta */
+function tip_meta( $post_id, $action = 'get', $tip = null ) {
+  
+  //Let's make a switch to handle the three cases of 'Action'
+  switch ($action) {
+    case 'update' :
+      if( ! $tip )
+        //If nothing is given to update, end here
+        return false;
+      
+      if( $tip ) {
+        add_post_meta( $post_id, 'tour_tip', $tip );
+        return true;
+      }
+
+    break;
+    case 'delete' :
+
+	    // This will delete all instances of the following keys from the given post
+    	// By passing in a meta_value, we can remove a specific meta
+		// delete_post_meta( $post_id, $meta_key, $meta_value )
+	    delete_post_meta( $post_id, 'tour_tip', $tip );
+      
+    break;
+    case 'get' :
+  
+      $stored_tips = get_post_meta( $post_id, 'tour_tip' );
+
+      if ( ! empty( $stored_tips ) )
+      	return $stored_tips;
+    break;
+    default :
+      return false;
+    break;
+  } //end switch
+} //end function
+
 /* support widget */
 
 // Create the function to output the contents of our Dashboard Widget
@@ -234,7 +437,7 @@ function tips_custom_post_type() {
 	    'has_archive' => true, 
 	    'hierarchical' => true,
 	    'menu_position' => null,
-	    'supports' => array( 'title', 'author', 'excerpt' ),
+	    'supports' => array( 'title', 'author', 'excerpt', 'custom-fields' ),
 		'capabilities' => array(
 		    'edit_post'          => 'update_core',
 		    'read_post'          => 'update_core',
@@ -247,6 +450,38 @@ function tips_custom_post_type() {
 	  ); 
 
 	  register_post_type( 'joyride_tour', $args_tour );
+
+// Add new taxonomy, NOT hierarchical (like tags)
+	$labels = array(
+		'name'                       => _x( 'Tour Groups', 'taxonomy general name' ),
+		'singular_name'              => _x( 'Tour Group', 'taxonomy singular name' ),
+		'search_items'               => __( 'Search Tour Groups' ),
+		'popular_items'              => __( 'Popular Tour Groups' ),
+		'all_items'                  => __( 'All Tour Groups' ),
+		'parent_item'                => null,
+		'parent_item_colon'          => null,
+		'edit_item'                  => __( 'Edit Tour Group' ),
+		'update_item'                => __( 'Update Tour Group' ),
+		'add_new_item'               => __( 'Add New Tour Group' ),
+		'new_item_name'              => __( 'New Tour Group Name' ),
+		'separate_items_with_commas' => __( 'Separate Tour Groups with commas' ),
+		'add_or_remove_items'        => __( 'Add or remove Tour Groups' ),
+		'choose_from_most_used'      => __( 'Choose from the most used Tour Groups' ),
+		'not_found'                  => __( 'No Tour Groups found.' ),
+		'menu_name'                  => __( 'Tour Groups' ),
+	);
+
+	$args = array(
+		'hierarchical'          => true,
+		'labels'                => $labels,
+		'show_ui'               => true,
+		'show_admin_column'     => true,
+		'update_count_callback' => '_update_post_term_count',
+		'query_var'             => true,
+		//'rewrite'               => array( 'slug' => 'writer' ),
+	);
+
+	register_taxonomy( 'tour_groups', 'joyride_tour', $args );
 
 }
 // Hook into the 'wp_dashboard_setup' action to register our other functions
