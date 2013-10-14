@@ -1,0 +1,138 @@
+(function($){
+
+  var Tour = { Views:{} },
+      wpt  = window.wpTour;
+
+  /**
+   * Model
+   */
+  Tour.Model = Backbone.Model.extend({
+    defaults : {
+      'correct' : false
+    },
+    url : ajaxurl+'?action=save_tip',
+    toJSON : function(){
+      var attrs = _.clone(this.attributes);
+      attrs.post_id = wpt.post_id;
+      return attrs;
+    },
+    initialize : function(){
+      if(this.get('tip_id') === wpt.tips.correct){
+        this.set('correct', true)
+      }
+    }
+  });
+
+  /**
+   * Collection
+   */
+  Tour.Collection = Backbone.Collection.extend({
+    model : Tour.Model
+  });
+
+  /**
+   * All inputs
+   */
+  Tour.Views.Inputs = Backbone.View.extend({
+    initialize : function () {
+      this.collection.each(this.addInput, this);
+    },
+    addInput : function(model, index){
+      var input = new Tour.Views.Input({ model:model });
+      this.$el.append(input.render().el);
+    }
+  });
+
+  /**
+   * Single input
+   */
+  Tour.Views.Input = Backbone.View.extend({
+    tagName : 'p',
+    // Get the template from the DOM
+    template :_.template($(wpt.inputTempl).html()),
+
+    // When a model is saved, return the button to the disabled state
+    initialize : function () {
+      var _this = this;
+      this.model.on('sync', function(){
+        _this.$('button').text('Save').attr('disabled', true);
+      });
+    },
+
+    // Attach events
+    events : {
+      'keyup input' : 'blur',
+      'blur input' : 'blur',
+      'click button' : 'save'
+    },
+
+    // Perform the Save
+    save : function(e){
+      e.preventDefault();
+      $(e.target).text('wait');
+      this.model.save();
+    },
+
+    // Update the model attributes with data from the input field
+    blur : function(){
+      var input = this.$('input').val();
+      if (input !== this.model.get('tip')) {
+        this.model.set('tip', input);
+        this.$('button').attr('disabled', false);
+      }
+    },
+
+    // Render the single input - include an index.
+    render : function () {
+      this.model.set('index', this.model.collection.indexOf(this.model)+1);
+      this.$el.html(this.template(this.model.toJSON()));
+      return this;
+    }
+  });
+
+
+  /**
+   * Select element
+   */
+  Tour.Views.Select = Backbone.View.extend({
+    initialize : function () {
+      this.collection.each(this.addOption, this);
+    },
+    addOption : function (model) {
+      var option = new Tour.Views.Option({ model:model });
+      this.$el.append(option.render().el);
+    }
+  });
+
+  /**
+   * Single Option
+   */
+  Tour.Views.Option = Backbone.View.extend({
+    tagName:'option',
+
+    // returning a hash allows us to set attributes dynamically
+    attributes : function () {
+      return {
+        'value':this.model.get('tip_id'),
+        'selected':this.model.get('correct')
+      }
+    },
+
+    // Watch for changes to each model (that would happen in the input fields and re-render when there is a change
+    initialize : function () {
+      this.model.on('change', this.render, this);
+    },
+    render : function () {
+      this.$el.text(this.model.get('tip'));
+      return this;
+    }
+  });
+
+  /**
+   * init
+   */
+  var tips  = new Tour.Collection(wpt.tips),
+    selectElem = new Tour.Views.Select({collection:tips, el :wpt.tipSelect}),
+    inputs     = new Tour.Views.Inputs({collection:tips, el:wpt.tipInput});
+
+}(jQuery));
