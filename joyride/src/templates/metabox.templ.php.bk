@@ -1,0 +1,31 @@
+
+<!-- Undescore Template -->
+<script type="text/template" id="inputTemplate">
+    <label for="<%= tip_id %>"><%= index %>:</label>
+    <input id="<%= tip_id %>" class="tips" size="30" type="text" name="<%= tip_id %>" value="<%= tip %>"
+           placeholder="Tip for Tour <%= index %> Here">
+    <button disabled="true">Save</button>
+</script>
+<!-- Underscore Template ### END -->
+
+<p>Enter the Tips below</p>
+<div id="tipInputs"></div>
+<div>
+  <span>Correct Answer:</span>
+  <select name="correct_answer" id="tipSelect"></select>
+</div>
+<p>
+  <input name="save" type="submit" class="button button-primary button-small" value="Save all">
+</p>
+
+
+<script>
+  window.wpTour = {};
+  var wpt = window.wpTour;
+  wpt.tips = <?= $tips ?>;
+  wpt.tips.correct = <?= $correct ?>;
+  wpt.tipSelect = '#tipSelect';
+  wpt.tipInput = '#tipInputs';
+  wpt.inputTempl = '#inputTemplate';
+  wpt.post_id = <?= $post->ID ?>;
+</script>
