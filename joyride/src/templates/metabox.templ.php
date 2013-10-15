@@ -1,5 +1,7 @@
 <div id="tourPanel">
 
+<div id="tourTab"><i class="icon-cog icon-light icon-large"></i></div>
+
 <div id="tours">
   <span class="title">All Tours</span><br>
 </div>
@@ -23,6 +25,72 @@
 
 <div id="tipInputs" class="hide">
   <p>Enter the Tips below</p>
+
+<div id="form-ui" class="hide"><form>
+  <div class="steps">
+  <!-- tips form -->
+  <div id="tips-form">
+
+    <div class="input-wrap">
+      <p class="label"><label for="parent_id">
+      Parent ID / Selector <em>( Be sure to use # for ID or . for class names )</em>
+      </label></p>
+      <input type="text" id="parent_id" name="parent_id" class="text" />
+      <button id="selector_gadget">Selector Gadget</button>
+    </div>
+
+    <div class="input-wrap">
+      <p class="label"><label for="tip_title">
+      Tip Title
+      </label></p>
+      <input type="text" id="tip_title" name="tip_title" class="text" />
+    </div>
+
+    <div class="input-wrap">
+      <p class="label"><label for="tip_text">
+      Tip Text
+      </label></p>
+      <input type="text" id="tip_text" name="tip_text" class="text" />
+    </div>
+
+    <div class="input-wrap">
+      <p class="label"><label for="tip_location">
+      Tip Location
+      </label></p>
+      <ul class="checkbox-list">
+        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Top" /> Top</label></li>
+        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Bottom" /> Bottom</label></li>
+        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Left" /> Left</label></li>
+        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Right" /> Right</label></li>        
+      </ul>
+    </div>
+
+    <div class="input-wrap">
+      <p class="label"><label for="tip_animation">
+      Tip Animation
+      </label></p>
+      <ul class="checkbox-list">
+        <li><label><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Pop" /> Pop</label></li>
+        <li><label><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Fade" /> Fade</label></li>    
+      </ul>
+    </div>
+
+    <div class="input-wrap">
+      <p class="label"><label for="button_text">
+      Button Text
+      </label></p>
+      <input type="text" id="button_text" name="button_text" class="text" />
+    </div>
+    </div><!--//#tips-form -->
+  </div><!--//#steps -->
+
+
+  <!--p><input type="button" id="preview_tip" value="Preview" class="button button-primary button-small"></p-->    
+  <p><input type="submit" value="Save" class="button button-primary button-small"></p>    
+</form>
+</div><!--//#form-ui -->
+
+
 </div>
 
 <!--p>
@@ -44,13 +112,27 @@
 <style type="text/css">
 #tourPanel {
   position: absolute;
-  right: 0;
+  right: -270px;
   top: 25px;
   width:250px;
   height: auto;
   background: #333;
   color: #fff;
   padding: 10px;
+}
+#tourTab {
+  width: 25px;
+  height: 25px;
+  border-radius: 4px 0 0 4px;
+  background: #333;
+  text-align: center;
+  padding: 8px 5px 0;
+  position: absolute;
+  top: 0;
+  left: -35px;
+  i[class='icon-*'] {
+    
+  }
 }
 #tourInputs label, #form-ui label {
     display: block;
