@@ -11,15 +11,12 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 require( 'lib/settings_page.php');
-//require( 'lib/process_post_data.php');
-
-// Include the Class File
-include 'joyride/src/WpTour.php';
 
 function joyride_admin_init(){
 
 		$plugin_uri = plugin_dir_url( __FILE__ );
 	/* load css */
+		wp_enqueue_style( 'font-awesome', $plugin_uri . 'lib/font-awesome/css/font-awesome.min.css' );
 		wp_enqueue_style( 'joyride', $plugin_uri . 'joyride/joyride-2.1.css' );
 		wp_enqueue_style('jquery-ui',
                 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css',
@@ -33,13 +30,6 @@ function joyride_admin_init(){
 		wp_enqueue_script( 'jquery-modernizr', $plugin_uri . 'joyride/modernizr.mq.js', array('jquery') );
 		wp_enqueue_script( 'jquery-joyride', $plugin_uri . 'joyride/jquery.joyride-2.1.js', array('jquery') );
 		wp_enqueue_script( 'jquery-joyride-init', $plugin_uri . 'joyride/plugin.js', array('jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-accordion','jquery-ui-draggable','jquery-ui-droppable','jquery-joyride') );
-
-		//wp_enqueue_script( 'joyride_main_js', $plugin_uri . 'joyride/js/main.js' , array('backbone'), null, true);
-		//wp_enqueue_script('joyride_main_js');
-  
-		/*wp_localize_script( 'jquery-joyride-init', 'ajax_object',
-            array( 'ajax_url' => admin_url( 'admin-ajax.php' ) )
-        );*/
 
 		require( 'lib/metabox_tips.php');
 }
@@ -152,21 +142,13 @@ function joyride_admin_init(){
 		$tours = get_tours_tips();
 
 		//build up json object with tour + tips
-/*		
-		$str = "<script id=\"tour_data\" type=\"application/json\">\n";
-		$str .= json_encode($data);
-		$str .= "</script>";
-*/
 		$str .= "<script id=\"tours_all\" type=\"application/json\">\n";
 		$str .= json_encode($tours);
 		$str .= "</script><script id=\"tours_groups\" type=\"application/json\">\n";
 		$str .= json_encode($tours_groups);
 		$str .= "</script>";
 		print $str;
-
-		// embedded styles
-//		print '<style type="text/css">';
-//		print '</style>';
+		print getTourBox();
 	}
 
 
@@ -179,38 +161,67 @@ add_action( 'admin_init', 'joyride_admin_init' );
 add_action( 'init', 'joyride_init');
 add_action( 'admin_footer', 'build_tour_json');
 
-/* wpTour */
-function call_wp_tour()
-{
-  return new WpTour('admin');
-}
-
-// init when Admin panel is being displayed
-if (is_admin) add_action('init', 'call_wp_tour');
-
-// Helper function to allow use of relative paths
-if (!function_exists('pp')){
-  function pp()
-  {
-    return plugin_dir_url(__FILE__);
-  }
-}
-
-
-
-
 if ( is_admin() )
 {
 	add_action('wp_ajax_create_tour', 'create_tour_callback');
+    add_action('wp_ajax_save_tour', 'save_tour_callback');	
 	add_action('wp_ajax_save_tip', 'save_tip_callback');
 	add_action('wp_ajax_delete_tip', 'delete_tip_callback');
 	add_action('wp_ajax_delete_tour', 'delete_tour_callback');
 }
 
 
+/**
+   * ----------------------------------------------
+   * Render a Template File
+   * ----------------------------------------------
+   *
+   * @param $filePath
+   * @param null $viewData
+   * @return string
+   */
+  function getTemplatePart($filePath, $viewData = null) {
+
+    ($viewData) ? extract($viewData) : null;
+
+    ob_start();
+    include ("$filePath");
+    $template = ob_get_contents();
+    ob_end_clean();
+
+    return $template;
+  }
+
+function getTourBox() {
+	
+	$metaBoxTempl = 'joyride/src/templates/metabox.templ.php';
+
+    // Set data needed in the template
+    $viewData = array(
+      'tour_id' => 'tour_title',
+      'index' => 'New Tour',
+      'tour' => null,
+      //'tips' => json_encode( $this->tipIds )
+    );
+
+    // Output the rendered template
+    echo getTemplatePart($metaBoxTempl, $viewData);
+
+}
+
+function getOneTour($post_id){
+    $tour = get_post( $post_id );
+    return array(
+      'title' => $tour->post_title,
+      'hashtag' => get_post_meta( $post_id, 'tour_hashtag', true),
+      'url' => get_post_meta( $post_id, 'tour_url', true),
+      'id' => $tour->ID
+    );
+}
+
 function create_tour_callback() {
 		global $wpdb; // this is how you get access to the database
-	//if( array_key_exists( 'tour_title', $_POST ) ) {
+
 		$tour = array(
 			'title' => $_POST['tour_title'],
 			'hashtag' => $_POST['tour_hashtag'],
@@ -221,29 +232,21 @@ function create_tour_callback() {
 		$args = array(
 			'post_title' => $tour['title'],
 			'post_type' => 'joyride_tour',
-		//	'tax_input' => [ array( 'taxonomy_id' => array( $tour['group_id'] ) ) ],
-		//	'post_name' => $tour['hashtag'],
 			'post_status' => 'publish',
 			'post_content' => 'tour description can go here or nothing at all'
 		);
-		//print_r($args);die();
 		$tour_id = wp_insert_post( $args, true );
 
-		//print_r($args);
-		//if ( $wp_error ) return $wp_error;
 		if ( $tour_id ) {
 			add_post_meta( $tour_id, 'tour_hashtag', $tour['hashtag'], true);
 			add_post_meta( $tour_id, 'tour_url', $tour['url'], true);
 			echo $tour_id;
 		}
 		die();
-	//}
-
 }
 
 function save_tip_callback() {
-		global $wpdb; // this is how you get access to the database
-	//if( array_key_exists( 'tour_title', $_POST ) ) {
+
 		$tip = array(
 			'parent_id' => $_POST['parent_id'],
 			'tip_title' => $_POST['tip_title'],
@@ -253,13 +256,10 @@ function save_tip_callback() {
 			'button_text' => $_POST['button_text'],
 		);
 		$tour_id = $_POST['tour_id'];		
-
-		//if( add_post_meta( $tour_id, 'tour_tip', serialize($tip), false) ) {
 		if( tip_meta( $tour_id, 'update', serialize($tip) ) ) {
 			echo json_encode($tip);
 		}
 		die();
-	//}
 
 }
 
@@ -285,6 +285,37 @@ function delete_tour_callback() {
 	}
 }
 
+function save_tour_callback()
+  {
+
+    // Get POST data
+    $model = array(
+      'tour_title' => $_POST['tour_title'],
+      'tour_hashtag' => $_POST['tour_hashtag'],
+      'tour_url' => $_POST['tour_url'],
+    );
+
+    $tour = array(
+      'title' => $model['tour_title'],
+      'hashtag' => $model['tour_hashtag'],
+      'url' => $model['tour_url'],
+    );
+    //return json_encode($tour);
+    $args = array(
+      'post_title' => $tour['title'],
+      'post_type' => 'joyride_tour',
+      'post_status' => 'publish',
+      'post_content' => 'tour description can go here or nothing at all'
+    );
+    $tour_id = wp_insert_post( $args, true );
+
+    if ( $tour_id ) {
+      add_post_meta($tour_id, 'tour_hashtag', $tour['hashtag'], true);
+      add_post_meta($tour_id, 'tour_url', $tour['url'], true);
+      echo json_encode(getOneTour($tour_id));
+    }
+    die();
+  }
 /* tip meta */
 function tip_meta( $post_id, $action = 'get', $tip = null ) {
   
@@ -295,7 +326,7 @@ function tip_meta( $post_id, $action = 'get', $tip = null ) {
         //If nothing is given to update, end here
         return false;
       
-      if( $tip ) {
+      if( $tip ) { 
         add_post_meta( $post_id, 'tour_tip', $tip );
         return true;
       }
