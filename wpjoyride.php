@@ -395,50 +395,9 @@ function tips_add_dashboard_widgets() {
 
 } 
 
-// create custom post type to house the tips
+// create custom post type to house the tours
 function tips_custom_post_type() {
 
-	$labels = array(
-	    'name' => 'Tips',
-	    'singular_name' => 'Tip',
-	    'add_new' => 'Add New',
-	    'add_new_item' => 'Add New Tip',
-	    'edit_item' => 'Edit Tip',
-	    'new_item' => 'New Tip',
-	    'all_items' => 'All Tips',
-	    'view_item' => 'View Tip',
-	    'search_items' => 'Search Tips',
-	    'not_found' =>  'No Tips found',
-	    'not_found_in_trash' => 'No Tips found in Trash', 
-	    'parent_item_colon' => '',
-	    'menu_name' => 'Tips'
-	  );
-
-	  $args = array(
-	    'labels' => $labels,
-	    'public' => true,
-	    'publicly_queryable' => false,
-	    'show_ui' => true, 
-	    'show_in_menu' => true, 
-	    'query_var' => true,
-	    'rewrite' => array( 'slug' => 'tip' ),
-	    'capability_type' => 'post',
-	    'has_archive' => true, 
-	    'hierarchical' => true,
-	    'menu_position' => null,
-	    'supports' => array( 'title', 'author', 'excerpt' ),
-		'capabilities' => array(
-		    'edit_post'          => 'update_core',
-		    'read_post'          => 'update_core',
-		    'delete_post'        => 'update_core',
-		    'edit_posts'         => 'update_core',
-		    'edit_others_posts'  => 'update_core',
-		    'publish_posts'      => 'update_core',
-		    'read_private_posts' => 'update_core'
-		),
-	  ); 
-
-	  register_post_type( 'joyride_tip', $args );
 
 	$labels_tour = array(
 	    'name' => 'Tours',
@@ -482,7 +441,7 @@ function tips_custom_post_type() {
 
 	  register_post_type( 'joyride_tour', $args_tour );
 
-// Add new taxonomy, NOT hierarchical (like tags)
+	// Add new taxonomy to classify tours into 'tour groups'
 	$labels = array(
 		'name'                       => _x( 'Tour Groups', 'taxonomy general name' ),
 		'singular_name'              => _x( 'Tour Group', 'taxonomy singular name' ),
