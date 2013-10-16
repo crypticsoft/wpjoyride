@@ -38,7 +38,8 @@ function joyride_admin_init(){
 		$args = array(
 			'post_type' => 'joyride_tour',
 			'order' => 'ASC',
-			'orderby' => 'date'
+			'orderby' => 'date',
+			'posts_per_page' => -1
 		);
 		// The Query
 		$the_query = new WP_Query( $args );
