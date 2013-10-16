@@ -58,10 +58,10 @@
       Tip Location
       </label></p>
       <ul class="checkbox-list">
-        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Top" /> Top</li>
-        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Bottom" /> Bottom</li>
-        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Left" /> Left</li>
-        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Right" /> Right</li>     
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="top" /> Top</li>
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="bottom" /> Bottom</li>
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="left" /> Left</li>
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="right" /> Right</li>     
       </ul>
     </div>
 
@@ -70,8 +70,8 @@
       Tip Animation
       </label></p>
       <ul class="checkbox-list">
-        <li><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Pop" /> Pop</li>
-        <li><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Fade" /> Fade</li>    
+        <li><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="pop" /> Pop</li>
+        <li><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="fade" /> Fade</li>    
       </ul>
     </div>
 
