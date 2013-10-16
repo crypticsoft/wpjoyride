@@ -260,7 +260,7 @@ function refreshSelectors() {
     $('body *:not(#tourPanel, #tourPanel *)').hover(function() {
     	var el = $(this);
     	var selectorText = extractCssSelectorPath(el);
-    	console.log(selectorText);
+    	//console.log(selectorText);
 	    var selector_field = $('#parent_id');
 	    var elementHoverClass = 'highlighter';
 
