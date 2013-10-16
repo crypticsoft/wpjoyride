@@ -10,8 +10,6 @@ License: GPLv2 only
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
-require( 'lib/settings_page.php');
-
 function joyride_admin_init(){
 
 		$plugin_uri = plugin_dir_url( __FILE__ );
