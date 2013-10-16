@@ -99,8 +99,7 @@ function joyride_admin_init(){
 
 	function get_tours_tips() {
 		foreach(get_tours() as $tour){
-			// get tips related to this tour
-			//$tips = get_tips( $tour['id'] );
+			// get tips from tour, returns array with json encoded strings
 			$tips = tip_meta( $tour['id'], 'get' );
 			$hashtag = get_post_meta( $tour['id'], 'tour_hashtag', true );
 			$url = get_post_meta( $tour['id'], 'tour_url', true );
@@ -113,15 +112,15 @@ function joyride_admin_init(){
 			);
 
 			foreach($tips as $tip){
-				$tip = unserialize( $tip );
-				if( $tip['parent_id'] && $tip['tip_title' ]) {
+				$tip = json_decode($tip);
+				if( $tip->parent_id && $tip->tip_title ) {
 					$data['steps'][] = array(
-						'id' => ( substr($tip['parent_id'], 0, 1) == '#' ? str_replace('#','',$tip['parent_id']) : NULL ),
-						'class' => ( substr($tip['parent_id'], 0, 1) == '.' ? str_replace('.','',$tip['parent_id']) : NULL ),
-						'text' => $tip['button_text'],
-						'content' => htmlentities( stripslashes( $tip['tip_text'] ) ),
-						'title' => $tip['tip_title'],
-						'options' => 'tipLocation:' . $tip['tip_location'] . ';tipAnimation:' . $tip['tip_animation']
+						'id' => ( substr($tip->parent_id, 0, 1) == '#' ? str_replace('#','',$tip->parent_id) : NULL ),
+						'class' => ( substr($tip->parent_id, 0, 1) == '.' ? str_replace('.','',$tip->parent_id) : NULL ),
+						'text' => $tip->button_text,
+						'content' => htmlentities( stripslashes( $tip->tip_text ) ),
+						'title' => $tip->tip_title,
+						'options' => 'tipLocation:' . $tip->tip_location . ';tipAnimation:' . $tip->tip_animation
 					);
 				}
 			}
@@ -257,7 +256,7 @@ function save_tip_callback() {
 			'button_text' => $_POST['button_text'],
 		);
 		$tour_id = $_POST['tour_id'];		
-		if( tip_meta( $tour_id, 'update', serialize($tip) ) ) {
+		if( tip_meta( $tour_id, 'update', json_encode($tip) ) ) {
 			echo json_encode($tip);
 		}
 		die();
@@ -270,8 +269,8 @@ function delete_tip_callback() {
 
 	$tips = tip_meta( $post_id, 'get' );
 	foreach( $tips as $tip ){
-		$utip = unserialize($tip);
-		if( $title == $utip['tip_title'] ) {
+		//$utip = json_decode($tip);
+		if( $title == $tip['tip_title'] ) {
 			$del = tip_meta( $post_id, 'delete', $tip );
 			if( $del ) return;
 		}
