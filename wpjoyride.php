@@ -28,8 +28,6 @@ function joyride_admin_init(){
 		wp_enqueue_script( 'jquery-modernizr', $plugin_uri . 'joyride/modernizr.mq.js', array('jquery') );
 		wp_enqueue_script( 'jquery-joyride', $plugin_uri . 'joyride/jquery.joyride-2.1.js', array('jquery') );
 		wp_enqueue_script( 'jquery-joyride-init', $plugin_uri . 'joyride/plugin.js', array('jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-accordion','jquery-ui-draggable','jquery-ui-droppable','jquery-joyride') );
-
-		require( 'lib/metabox_tips.php');
 }
 
 	function get_tours(){
