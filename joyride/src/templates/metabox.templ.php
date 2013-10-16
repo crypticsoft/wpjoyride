@@ -3,7 +3,7 @@
 <div id="tourTab"><i class="icon-cog icon-light icon-large"></i></div>
 
 <div id="tours">
-  <span class="title">All Tours</span><br>
+  <span class="title">All Tours</span>
 </div>
 <div id="tourInputs">
 
@@ -33,7 +33,7 @@
 
     <div class="input-wrap">
       <p class="label"><label for="parent_id">
-      Parent ID / Selector <em>( Be sure to use # for ID or . for class names )</em>
+      Parent ID / Selector
       </label></p>
       <input type="text" id="parent_id" name="parent_id" class="text" />
       <button id="selector_gadget">Selector Gadget</button>
@@ -58,10 +58,10 @@
       Tip Location
       </label></p>
       <ul class="checkbox-list">
-        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Top" /> Top</label></li>
-        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Bottom" /> Bottom</label></li>
-        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Left" /> Left</label></li>
-        <li><label><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Right" /> Right</label></li>        
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Top" /> Top</li>
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Bottom" /> Bottom</li>
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Left" /> Left</li>
+        <li><input type="checkbox" id="tip_location" name="tip_location" class="checkbox" value="Right" /> Right</li>     
       </ul>
     </div>
 
@@ -70,8 +70,8 @@
       Tip Animation
       </label></p>
       <ul class="checkbox-list">
-        <li><label><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Pop" /> Pop</label></li>
-        <li><label><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Fade" /> Fade</label></li>    
+        <li><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Pop" /> Pop</li>
+        <li><input type="checkbox" id="tip_animation" name="tip_animation" class="checkbox" value="Fade" /> Fade</li>    
       </ul>
     </div>
 
@@ -93,22 +93,8 @@
 
 </div>
 
-<!--p>
-  <input name="save" type="submit" class="button button-primary button-small" value="Save all">
-</p-->
 </div>
-<!--script>
-  window.wpTour = {};
-  var wpt = window.wpTour;
-  wpt.tips = <?= $tips ?>;
-  <?php /* wpt.tips.correct = <?= $correct ?>; */ ?>
-  wpt.tipSelect = '#tipSelect';
-  wpt.tipInput = '#tipInputs';
-  wpt.tourInput = '#tourInputs';
-  wpt.inputTempl = '#inputTemplate';
-  wpt.tourTempl = '#tourTemplate';
-  <?php /* wpt.post_id = <?= $post->ID ?>; */ ?>
-</script-->
+
 <style type="text/css">
 #tourPanel {
   position: absolute;
@@ -119,6 +105,10 @@
   background: #333;
   color: #fff;
   padding: 10px;
+  border-radius: 0 0 0 4px;  
+}
+#tours {
+  margin-bottom: 10px;
 }
 #tourTab {
   width: 25px;
@@ -130,26 +120,49 @@
   position: absolute;
   top: 0;
   left: -35px;
-  i[class='icon-*'] {
-    
-  }
+  cursor: pointer;
 }
-#tourInputs label, #form-ui label {
+#tourInputs p {
+  margin: 1em 0 0.5em;
+}
+#tourInputs span.title:last-child {
+  border-top: 1px dashed #999;
+  border-bottom: 1px dashed #999;
+  display: block;
+  padding: 5px 0;
+}
+#tourInputs label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #ccc;
+    margin: 5px 0;
+}
+#tourInputs button {
+  margin-top: 10px;
+}
+
+#form-ui label {
     display: block;
     font-size: 11px;
     text-transform: uppercase;
     color: #ccc;
 }
-#tourInputs input {
-  margin-bottom: 10px;
+
+#tourInputs input, #tipInputs input[type=text] {
   width: 100%;
 }
 #tourInputs button {
   display: block;
 }
-#tipInputs {}
-
 .hide { display: none; }
+#tipInputs div.input-wrap {
+  margin-bottom: 10px;
+}
+#tipInputs div.input-wrap label {
+  text-transform: normal;
+  display: inline-block;
+}
 
 .highlighter {
 -moz-box-shadow: inset 0 0 1em gold;
