@@ -34,7 +34,7 @@ var tourObj = {
 			var tours = $.parseJSON( $("#tours_all").html() );
 			if(hash!=''){
 				this.parseHTML(tip_id, tours);
-				$('#'+tip_id).joyride();//not sure why i need this here but joyride won't start without it
+				$('#'+tip_id).attr('style','display:none').joyride();//not sure why i need this here but joyride won't start without it
 				this.init_joyride(tip_id);
 			}//end if hash
 		}//end if location.hash
