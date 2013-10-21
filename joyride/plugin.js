@@ -131,7 +131,7 @@ var tourObj = {
 
 		var item = {
 	        tour_url: $("#tour_url").val(),
-	        tour_hashtag: $("#tour_hashtag").val(),
+	        tour_hashtag: $("#tour_hashtag").val().replace('#',''),
 	        tour_title: $("#tour_title").val(),
 	        tour_id: $("#tour_id").val() ? $("#tour_id").val() : null
 	    }
@@ -254,9 +254,10 @@ function extractCssSelectorPath(el) {
 }
 
 function refreshSelectors() {
-
+	$("#tourPanel").animate({ right: -270 }); //hide the panel
     //on mouseenter on every element in the body except the brosho wrapper and overlay
-    $('body *:not(#tourPanel, #tourPanel *)').hover(function() {
+    $('body *:not(#tourPanel, #tourPanel *)').bind({
+    	mouseenter : function() {
     	var el = $(this);
     	var selectorText = extractCssSelectorPath(el);
     	//console.log(selectorText);
@@ -266,22 +267,23 @@ function refreshSelectors() {
     	el.addClass(elementHoverClass); //add the hover class to the current element
     	selector_field.val( selectorText ); //update selector text on hover
 
-    }, function() { //on mouseleave
+    }, mouseleave : function() { //on mouseleave
 	    var selector_field = $('#parent_id');
 	    var elementHoverClass = 'highlighter';
 		$(this).removeClass(elementHoverClass); //remove the hover class
 		selector_field.empty(); //clear selector text	      
 
-    }).click(function(e) { //on element click
+    }, click : function(e) { //on element click
 		var el = $(this); //store the current element
     	var selectorText = extractCssSelectorPath(el);	    
 	    var elementHoverClass = 'highlighter';
 
 		$('body *').removeClass(elementHoverClass); //remove the brosho hover class on every element so we dont generate a false path
 		$('body *:not(#tourPanel, #tourPanel *)').unbind("mouseenter mouseleave click");
+		$("#tourPanel").animate({ right: 0 }); //show the panel
 		return false; //dont follow the link if it is one
 
-    });//end hover function
+    }});//end bind function
 
 }
 	
