@@ -34,7 +34,18 @@ var tourObj = {
 			var tours = $.parseJSON( $("#tours_all").html() );
 			if(hash!=''){
 				this.parseHTML(tip_id, tours);
-				$('#'+tip_id).attr('style','display:none').joyride();//not sure why i need this here but joyride won't start without it
+				$('#'+tip_id).attr('style','display:none').joyride(
+				{
+				'tipContainer' : '#wpwrap',
+				'preStepCallback' : function(i,val){
+					if( $('#wpadminbar').length > 0 ){
+						var ntop = $('#wpadminbar').height();
+						setTimeout(function(){ //slight delay to allow visible selector to fire on active step
+							$('.joyride-tip-guide:visible').animate({top: '-=' + ntop });
+						}, 1000);
+					}
+				}// end preStepCallback
+				});//#joyride
 				this.init_joyride(tip_id);
 			}//end if hash
 		}//end if location.hash
@@ -164,21 +175,9 @@ var tourObj = {
 		return;
 	},
 	init_joyride : function( tip_id ) {
-
-		$(window).load(function() {			
-			//console.log($('#'+tip_id));
-			$('#'+tip_id).joyride({
-			'postStepCallback': function(i,val){ 	// A method to call after each step
-				if( $('#wpadminbar').length > 0 ){
-					var ntop = $('#wpadminbar').height();					
-					$('.joyride-tip-guide:visible').animate({top: '-=' + ntop });
-				}
-			}        
-			
-			});
+		$(window).load(function() {
+			$('#'+tip_id).joyride();
 		});
-
-
 	}
 }
 
